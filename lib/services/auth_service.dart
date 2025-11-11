@@ -5,10 +5,10 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Stream để theo dõi trạng thái đăng nhập
+ 
   Stream<User?> get userChanges => _auth.authStateChanges();
 
-  // Hàm Đăng ký và tạo hồ sơ Firestore
+
   Future<User?> signUp(String email, String password, String name) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
@@ -18,7 +18,7 @@ class AuthService {
       User? user = result.user;
 
       if (user != null) {
-        // Lưu hồ sơ người dùng vào Firestore (Data Modeling)
+        
         await _firestore.collection('users').doc(user.uid).set({
           'uid': user.uid,
           'email': email,
@@ -33,7 +33,7 @@ class AuthService {
     }
   }
 
-  // Hàm Đăng nhập
+ 
   Future<User?> signIn(String email, String password) async {
     try {
       UserCredential result = await _auth.signInWithEmailAndPassword(
@@ -47,7 +47,6 @@ class AuthService {
     }
   }
 
-  // Hàm Đăng xuất
   Future<void> signOut() async {
     await _auth.signOut();
   }
