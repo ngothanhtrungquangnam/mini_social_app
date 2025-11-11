@@ -9,9 +9,7 @@ class PostService {
   DocumentSnapshot? lastDocument;
   bool hasMore = true;
 
-  // ==================================================================
-  // ✨ [MỚI] HÀM HỖ TRỢ TẠO TRUY VẤN CƠ SỞ (CHỨA WHERE)
-  // ==================================================================
+ 
   Query _buildBaseQuery({bool filterByUser = false}) {
     Query query = _firestore.collection('posts');
 
