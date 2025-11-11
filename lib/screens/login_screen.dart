@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordController.text.trim(),
     );
 
-    // Kiểm tra "mounted" trước khi gọi setState sau một hàm async
+   
     if (!mounted) return;
 
     setState(() {
@@ -41,24 +41,24 @@ class _LoginScreenState extends State<LoginScreen> {
         _errorMessage = 'Đăng nhập thất bại. Kiểm tra Email/Mật khẩu.';
       });
     }
-    // Nếu thành công, AuthCheckScreen sẽ tự động chuyển hướng
+    
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Đăng nhập')),
-      // Thêm SingleChildScrollView để tránh lỗi overflow khi bàn phím hiện lên
+      
       body: SingleChildScrollView(
         child: Padding(
-          // Thêm padding cho toàn bộ form
+         
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment
-                .stretch, // Làm các nút co giãn theo chiều ngang
+                .stretch, 
             children: <Widget>[
-              // 1. Thêm một Icon hoặc Logo (Tùy chọn)
+              
               Icon(
                 Icons.lock_open_rounded,
                 size: 80,
@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 48),
 
-              // 2. Cập nhật TextField cho Email
+              
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
 
-              // 3. Cập nhật TextField cho Mật khẩu
+              
               TextField(
                 controller: _passwordController,
                 decoration: InputDecoration(
@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // 4. Hiển thị lỗi (nếu có)
+              
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-              // 5. Nút Đăng nhập (nếu đang loading thì hiển thị spinner)
+              
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
               const SizedBox(height: 12),
 
-              // 6. Nút Đăng ký
+             
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
