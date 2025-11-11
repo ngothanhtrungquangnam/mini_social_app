@@ -3,100 +3,97 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class PostService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final int pageSize = 10; // Giới hạn số lượng bài viết mỗi lần tải
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final int pageSize = 10;
 
-  // Con trỏ để đánh dấu bài viết cuối cùng của trang trước
   DocumentSnapshot? lastDocument;
-  bool hasMore = true; // Cờ báo hiệu còn dữ liệu để tải
+  bool hasMore = true;
 
-  // 1. Hàm tạo bài viết mới (giữ nguyên)
-  // Trong lib/services/post_service.dart
+  // ==================================================================
+  // ✨ [MỚI] HÀM HỖ TRỢ TẠO TRUY VẤN CƠ SỞ (CHỨA WHERE)
+  // ==================================================================
+  Query _buildBaseQuery({bool filterByUser = false}) {
+    Query query = _firestore.collection('posts');
 
-  Future<void> addPost({required String content}) async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      throw Exception('Người dùng chưa đăng nhập.');
+    // 👉 PHẦN WHERE BẠN ĐANG TÌM Ở ĐÂY:
+    if (filterByUser) {
+      final user = _auth.currentUser;
+      if (user != null) {
+        // Lọc: Chỉ lấy bài viết có userId trùng với người đang đăng nhập
+        query = query.where('userId', isEqualTo: user.uid);
+      }
     }
 
-    print("--- BẮT ĐẦU ĐĂNG BÀI ---"); // Log 1
-    print("UserID: ${user.uid}");
-
-    try {
-      print("Đang gọi Firestore..."); // Log 2
-
-      // Thêm timeout để không phải chờ mãi mãi (ví dụ 10 giây)
-      await _firestore.collection('posts').add({
-        'userId': user.uid,
-        'email': user.email,
-        'content': content,
-        'likeCount': 0,
-        'commentCount': 0,
-        'createdAt': FieldValue.serverTimestamp(),
-      }).timeout(const Duration(seconds: 10), onTimeout: () {
-        throw Exception("Firestore Timeout: Mạng quá chậm hoặc bị chặn!");
-      });
-
-      print("--- ĐĂNG BÀI THÀNH CÔNG ---"); // Log 3
-    } catch (e) {
-      print("--- LỖI ĐĂNG BÀI: $e ---"); // Log Lỗi
-      rethrow; // Ném lỗi ra ngoài để UI biết mà tắt loading
-    }
+    // Luôn luôn sắp xếp và giới hạn
+    return query.orderBy('createdAt', descending: true).limit(pageSize);
   }
 
-  // 2. Hàm Tải trang DỮ LIỆU ĐẦU TIÊN (Refresh)
-  Future<List<DocumentSnapshot>> getFirstPage() async {
-    // Reset trạng thái
+  // 1. Hàm tạo bài viết (Giữ nguyên)
+  Future<void> addPost({required String content}) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Chưa đăng nhập.');
+
+    await _firestore.collection('posts').add({
+      'userId': user.uid,
+      'email': user.email,
+      'content': content,
+      'likeCount': 0,
+      'commentCount': 0,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // 2. Tải trang đầu (Cập nhật để dùng _buildBaseQuery)
+  Future<List<DocumentSnapshot>> getFirstPage(
+      {bool filterByUser = false}) async {
     lastDocument = null;
     hasMore = true;
 
-    // Tạo truy vấn phức hợp (Complex Query)
-    Query query = _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .limit(pageSize);
+    try {
+      // Gọi hàm cơ sở để lấy query có (hoặc không có) WHERE
+      QuerySnapshot snapshot =
+          await _buildBaseQuery(filterByUser: filterByUser).get();
 
-    QuerySnapshot snapshot = await query.get();
-
-    if (snapshot.docs.isNotEmpty) {
-      // Lưu lại con trỏ cuối cùng
-      lastDocument = snapshot.docs.last;
-      // Kiểm tra nếu số lượng trả về ít hơn giới hạn thì là hết dữ liệu
-      if (snapshot.docs.length < pageSize) {
+      if (snapshot.docs.isNotEmpty) {
+        lastDocument = snapshot.docs.last;
+        if (snapshot.docs.length < pageSize) hasMore = false;
+      } else {
         hasMore = false;
       }
-    } else {
-      hasMore = false;
+      return snapshot.docs;
+    } catch (e) {
+      print("Lỗi tải trang đầu: $e");
+      return [];
     }
-
-    return snapshot.docs;
   }
 
-  // 3. Hàm Tải trang TIẾP THEO (Pagination)
-  Future<List<DocumentSnapshot>> getNextPage() async {
-    if (!hasMore || lastDocument == null) {
-      return []; // Nếu hết dữ liệu hoặc chưa tải trang đầu tiên thì trả về rỗng
-    }
+  // 3. Tải trang tiếp theo (Cập nhật để dùng _buildBaseQuery)
+  Future<List<DocumentSnapshot>> getNextPage(
+      {bool filterByUser = false}) async {
+    if (!hasMore || lastDocument == null) return [];
 
-    // Tạo truy vấn phức hợp: Bắt đầu TẢI SAU con trỏ của trang trước
-    Query query = _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .startAfterDocument(lastDocument!) // <-- Pagination logic
-        .limit(pageSize);
+    try {
+      // Gọi hàm cơ sở và thêm startAfterDocument
+      Query query = _buildBaseQuery(filterByUser: filterByUser)
+          .startAfterDocument(lastDocument!);
 
-    QuerySnapshot snapshot = await query.get();
+      QuerySnapshot snapshot = await query.get();
 
-    if (snapshot.docs.isNotEmpty) {
-      // Cập nhật con trỏ mới
-      lastDocument = snapshot.docs.last;
-      if (snapshot.docs.length < pageSize) {
+      if (snapshot.docs.isNotEmpty) {
+        lastDocument = snapshot.docs.last;
+        if (snapshot.docs.length < pageSize) hasMore = false;
+      } else {
         hasMore = false;
       }
-    } else {
-      hasMore = false;
+      return snapshot.docs;
+    } catch (e) {
+      print("Lỗi tải trang tiếp: $e");
+      return [];
     }
+  }
 
-    return snapshot.docs;
+  // (Tùy chọn) Stream cho Real-time nếu muốn demo
+  Stream<QuerySnapshot> getPostsStream({bool filterByUser = false}) {
+    return _buildBaseQuery(filterByUser: filterByUser).snapshots();
   }
 }
