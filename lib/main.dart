@@ -1,3 +1,5 @@
+// Ngô Thành Trung -22KTMT1
+// Nguyễn Văn Mùi -22KTMT2
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 // Import file cấu hình tự động sinh ra
