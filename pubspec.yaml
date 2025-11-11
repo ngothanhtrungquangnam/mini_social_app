@@ -1,0 +1,30 @@
+# 1. TRƯỜNG BẮT BUỘC: Tên dự án (phải viết thường, dùng dấu gạch dưới)
+name: mini_social_app 
+
+description: A mini social media app built with Flutter and Firebase Firestore.
+publish_to: 'none' # Remove this line if you intend to publish to pub.dev
+
+# 2. Môi trường SDK (đã sửa)
+environment:
+  sdk: '>=3.0.0 <4.0.0' # Hoặc phiên bản Dart/Flutter hiện tại của bạn
+
+# 3. Các gói phụ thuộc
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Các gói Firebase: Cần điền phiên bản thực tế (ví dụ: 5.2.0, 5.5.0, v.v.)
+  firebase_core: ^3.3.0
+  firebase_auth: ^5.2.0
+  cloud_firestore: ^5.5.0
+  
+  cupertino_icons: ^1.0.6
+
+# 4. Dev dependencies và Flutter config (giữ nguyên)
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
