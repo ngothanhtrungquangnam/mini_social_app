@@ -1,11 +1,11 @@
 // lib/screens/add_post_screen.dart
 
 import 'package:flutter/material.dart';
-// Import PostService để gọi hàm addPost
+
 import '../services/post_service.dart';
 
 class AddPostScreen extends StatefulWidget {
-  // Thêm key cho constructor
+ 
   const AddPostScreen({super.key});
 
   @override
@@ -17,7 +17,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final PostService _postService = PostService();
   bool _isLoading = false;
 
-// Trong lib/screens/add_post_screen.dart
+
 
   void _submitPost() async {
     if (_contentController.text.trim().isEmpty) return;
@@ -27,12 +27,11 @@ class _AddPostScreenState extends State<AddPostScreen> {
     });
 
     try {
-      // Thử gửi trong 5 giây, nếu lâu hơn thì cứ đóng màn hình
-      // và để Firestore tự xử lý ngầm.
+    
       await _postService
           .addPost(content: _contentController.text.trim())
           .timeout(const Duration(seconds: 5), onTimeout: () {
-        // Log warning nếu muốn
+        
         print("Firestore slow, but closing screen anyway.");
       });
 
