@@ -13,19 +13,19 @@ class _HomeScreenState extends State<HomeScreen> {
   final PostService _postService = PostService();
   final AuthService _authService = AuthService();
 
-  // Controller để lắng nghe sự kiện cuộn
+  
   final ScrollController _scrollController = ScrollController();
 
-  // Danh sách lưu trữ tất cả bài viết đã tải
+  
   List<DocumentSnapshot> _posts = [];
-  bool _isLoading = false; // Cờ để tránh tải đúp
+  bool _isLoading = false; 
 
   @override
   void initState() {
     super.initState();
-    // 1. Tải trang đầu tiên khi màn hình khởi tạo
+    
     _loadFirstPage();
-    // 2. Thêm Listener cho sự kiện cuộn
+    
     _scrollController.addListener(_scrollListener);
   }
 
@@ -35,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Hàm tải trang đầu tiên
+  
   Future<void> _loadFirstPage() async {
     setState(() {
       _isLoading = true;
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Hàm tải trang tiếp theo (Pagination)
+  
   void _loadNextPage() async {
     if (_isLoading || !_postService.hasMore) return;
 
@@ -65,11 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Lắng nghe sự kiện cuộn để kích hoạt tải thêm
+  
   void _scrollListener() {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      // Nếu cuộn đến cuối danh sách thì tải trang tiếp theo
+     
       _loadNextPage();
     }
   }
@@ -87,14 +87,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: RefreshIndicator(
-        // Thêm tính năng kéo xuống để làm mới
+        
         onRefresh: _loadFirstPage,
         child: ListView.builder(
           controller: _scrollController,
           itemCount: _posts.length +
-              (_postService.hasMore ? 1 : 0), // Thêm 1 item cho loading spinner
+              (_postService.hasMore ? 1 : 0), 
           itemBuilder: (context, index) {
-            // Hiển thị Loading Spinner ở cuối danh sách
+            
             if (index == _posts.length) {
               return const Center(
                 child: Padding(
@@ -123,11 +123,11 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          // Sau khi tạo bài viết, cần làm mới feed để thấy bài mới
+          
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddPostScreen()),
-          ).then((_) => _loadFirstPage()); // Tải lại trang đầu sau khi quay lại
+          ).then((_) => _loadFirstPage()); 
         },
       ),
     );
